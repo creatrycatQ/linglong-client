@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#060a12">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>灵龙电竞 · 打手接单助手 (Android)</title>
+  <link rel="icon" href="./assets/brand.webp" type="image/webp">
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body class="mobile-body">
+  <!-- 电竞暗黑环境光晕 -->
+  <div class="ambient-glow" aria-hidden="true"></div>
+
+  <!-- 1. 移动端专属顶部应用栏 (Mobile App Header) -->
+  <header class="mobile-header" id="mobile-header">
+    <div class="mobile-header-brand" id="mobile-header-brand">
+      <img src="./assets/brand.webp" class="mobile-header-logo" alt="灵龙电竞Logo">
+      <div class="mobile-header-titles">
+        <span class="mobile-header-name">灵龙电竞</span>
+        <span class="mobile-header-badge">打手端</span>
+      </div>
+      <div class="mobile-header-status" id="connection-status-pill" title="服务器连接与网络延迟">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">检测中</span>
+        <span id="status-latency" style="display:none; font-family:var(--font-mono);">0ms</span>
+      </div>
+    </div>
+
+    <div class="mobile-header-actions">
+      <!-- 快捷静音切换 -->
+      <button type="button" class="mobile-action-btn" id="btn-audio-toggle" title="抢单提示音与语音播报" aria-label="声音切换">
+        🔊
+      </button>
+      <!-- 打手头像/登录状态快捷入口 -->
+      <div class="mobile-user-badge" id="mobile-user-badge" title="打手个人中心">
+        <img src="./assets/brand.webp" class="mobile-user-avatar" id="sidebar-avatar" alt="头像">
+        <span class="mobile-user-name" id="sidebar-name">登录</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. 主体布局 (包含平板自适应侧边栏与手机视口) -->
+  <div class="app-layout" id="app-layout">
+    <!-- 平板/横屏响应式侧边栏 (仅在宽屏展示) -->
+    <aside class="sidebar" id="app-sidebar">
+      <div>
+        <div class="worker-card" id="worker-profile-card" title="点击查看打手资料">
+          <img src="./assets/brand.webp" class="worker-avatar" alt="头像">
+          <div class="worker-info">
+            <div class="worker-name">未登录</div>
+            <div class="worker-level-badge" id="sidebar-level">打手中心</div>
+            <div class="worker-rating-stars" id="sidebar-stars">⭐ 5.00</div>
+          </div>
+        </div>
+
+        <nav class="nav-menu">
+          <div class="nav-item active" data-page="pool">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">⚡</span>
+              <span>接单大厅</span>
+            </div>
+            <span class="nav-badge" id="badge-pool">0</span>
+          </div>
+
+          <div class="nav-item" data-page="active">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">🎮</span>
+              <span>履约中订单</span>
+            </div>
+            <span class="nav-badge" id="badge-active">0</span>
+          </div>
+
+          <div class="nav-item" data-page="orders">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">📋</span>
+              <span>全部订单</span>
+            </div>
+            <span class="nav-badge" id="badge-orders" style="display:none;">0</span>
+          </div>
+
+          <div class="nav-item" data-page="ledger">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">💰</span>
+              <span>收益与提现</span>
+            </div>
+          </div>
+
+          <div class="nav-item" data-page="profile">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">👤</span>
+              <span>个人中心</span>
+            </div>
+          </div>
+
+          <div class="nav-item" data-page="notice">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">📖</span>
+              <span>打手须知</span>
+            </div>
+            <span class="nav-badge" id="badge-notice" style="display:none;">待确认</span>
+          </div>
+
+          <div class="nav-item" data-page="settings">
+            <div class="nav-item-left">
+              <span class="nav-item-icon">⚙️</span>
+              <span>客户端设置</span>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <button type="button" class="logout-btn" id="btn-logout" style="display: none;">
+          <span>🚪</span>
+          <span>退出登录</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 动态内容视口 (可上下触控滑动) -->
+    <main class="main-content" id="main-view-container">
+      <div class="empty-state">
+        <div class="empty-icon">⏳</div>
+        <div style="font-size:16px; font-weight:700; color:#fff;">正在载入灵龙电竞接单助手...</div>
+        <div style="font-size:13px; color:var(--text-muted); margin-top:6px;">
+          正在同步云端订单池与安全服务状态
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 3. 移动端专属底部高斯模糊导航栏 (Mobile Liquid Glass Bottom Nav) -->
+  <nav class="mobile-bottom-bar" id="mobile-bottom-bar">
+    <button type="button" class="bottom-tab-item active" data-page="pool" id="tab-btn-pool">
+      <div class="tab-icon-wrapper">
+        <span class="tab-icon">⚡</span>
+        <span class="tab-badge" id="mobile-badge-pool" style="display:none;">0</span>
+      </div>
+      <span class="tab-label">抢单大厅</span>
+    </button>
+
+    <button type="button" class="bottom-tab-item" data-page="active" id="tab-btn-active">
+      <div class="tab-icon-wrapper">
+        <span class="tab-icon">🎮</span>
+        <span class="tab-badge" id="mobile-badge-active" style="display:none;">0</span>
+      </div>
+      <span class="tab-label">履约中</span>
+    </button>
+
+    <button type="button" class="bottom-tab-item" data-page="orders" id="tab-btn-orders">
+      <div class="tab-icon-wrapper">
+        <span class="tab-icon">📋</span>
+      </div>
+      <span class="tab-label">全部订单</span>
+    </button>
+
+    <button type="button" class="bottom-tab-item" data-page="ledger" id="tab-btn-ledger">
+      <div class="tab-icon-wrapper">
+        <span class="tab-icon">💰</span>
+      </div>
+      <span class="tab-label">收益提现</span>
+    </button>
+
+    <button type="button" class="bottom-tab-item" data-page="more" id="tab-btn-more">
+      <div class="tab-icon-wrapper">
+        <span class="tab-icon">☰</span>
+        <span class="tab-badge-dot" id="mobile-badge-dot" style="display:none;"></span>
+      </div>
+      <span class="tab-label">更多功能</span>
+    </button>
+  </nav>
+
+  <!-- 4. 移动端“更多功能”底部抽屉 (Mobile More Action Drawer) -->
+  <div class="mobile-drawer-overlay" id="mobile-drawer-overlay" style="display:none;">
+    <div class="mobile-drawer-sheet" id="mobile-drawer-sheet">
+      <div class="drawer-drag-handle"></div>
+      <div class="drawer-header">
+        <span style="font-weight:700; font-size:15px; color:#fff;">更多功能与设置</span>
+        <button type="button" class="btn sm" id="btn-close-drawer">✕</button>
+      </div>
+
+      <div class="drawer-grid">
+        <button type="button" class="drawer-menu-item" data-drawer-nav="profile">
+          <div class="drawer-item-icon">👤</div>
+          <div class="drawer-item-text">
+            <div class="title">个人中心</div>
+            <div class="sub">查看信誉分与评价</div>
+          </div>
+        </button>
+
+        <button type="button" class="drawer-menu-item" data-drawer-nav="notice">
+          <div class="drawer-item-icon">📖</div>
+          <div class="drawer-item-text">
+            <div class="title" style="display:flex; align-items:center; gap:6px;">
+              <span>打手须知</span>
+              <span class="pill-badge" id="drawer-badge-notice" style="font-size:10px; padding:2px 6px; display:none;">待确认</span>
+            </div>
+            <div class="sub">服务公约与电子签署</div>
+          </div>
+        </button>
+
+        <button type="button" class="drawer-menu-item" data-drawer-nav="settings">
+          <div class="drawer-item-icon">⚙️</div>
+          <div class="drawer-item-text">
+            <div class="title">客户端设置</div>
+            <div class="sub">来单音效与指名语音</div>
+          </div>
+        </button>
+
+        <button type="button" class="drawer-menu-item logout" id="btn-drawer-logout" style="display:none;">
+          <div class="drawer-item-icon" style="color:var(--danger);">🚪</div>
+          <div class="drawer-item-text">
+            <div class="title" style="color:var(--danger);">退出登录</div>
+            <div class="sub">解除当前账号绑定</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. 全局通用弹窗容器 (FlClash Modal Framework) -->
+  <div class="modal-overlay" id="global-modal-overlay">
+    <div class="modal-card" id="global-modal-card">
+      <div class="modal-header">
+        <div class="modal-title" id="global-modal-title">操作提示</div>
+        <button type="button" class="modal-close-btn" id="global-modal-close" title="关闭窗口">✕</button>
+      </div>
+      <div class="modal-body" id="global-modal-body"></div>
+      <div class="modal-footer" id="global-modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- 6. 拟物化轻量 Toast 提示框容器 -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- 引入移动端专属入口脚本 -->
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

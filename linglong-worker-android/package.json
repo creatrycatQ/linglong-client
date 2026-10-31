@@ -1,0 +1,24 @@
+{
+  "name": "linglong-worker-android",
+  "version": "1.0.2",
+  "description": "灵龙电竞平台 Windows & Android 原生打手接单客户端",
+  "main": "www/index.html",
+  "scripts": {
+    "build": "echo 'Build www completed'",
+    "cap:sync": "cap sync android",
+    "cap:open": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/app": "^6.0.1",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/haptics": "^6.0.1",
+    "@capacitor/keyboard": "^6.0.2",
+    "@capacitor/status-bar": "^6.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  },
+  "author": "CreatryCat",
+  "license": "MIT"
+}
